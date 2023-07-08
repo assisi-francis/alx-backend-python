@@ -3,9 +3,7 @@
 """
 
 
-import math
-
 def floor(n: float) -> int:
     """Takes n as float and returns the floor, int """
-    return math.floor(n)
+    return int(n)
 
