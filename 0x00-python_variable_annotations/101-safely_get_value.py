@@ -13,14 +13,16 @@ def safely_get_value(dct, key, default = None):
 """
 
 
-from typing import Dict, TypeVar, Optional
+import typing
 
 
-T = TypeVar('T')
+T = typing.TypeVar('T')
 
 
-def safely_get_value(dct: Dict[str, T], key: str,
-                     default: Optional[T] = None) -> Optional[T]:
+def safely_get_value(dct: typing.Mapping, key: typing.Any, default:
+                     typing.Union[T, None] = None) -> \
+        typing.Union[typing.Any, T]:
+    """annotations of the function"""
     if key in dct:
         return dct[key]
     else:
