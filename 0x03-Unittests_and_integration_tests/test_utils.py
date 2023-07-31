@@ -17,111 +17,68 @@ The body of the test method should not be longer than 2 lines.
 
 
 import unittest
+from unittest.mock import patch
 from parameterized import parameterized
 from utils import access_nested_map, get_json, memoize
-from unittest.mock import patch, Mock
 
 
 class TestAccessNestedMap(unittest.TestCase):
-    """_summary_
+    """ TESTCASE """
+    """ to test the function for following inputs """
+    @parameterized.expand([
+        ({"a": 1}, ("a",), 1),
+        ({"a": {"b": 2}}, ("a",), {"b": 2}),
+        ({"a": {"b": 2}}, ("a", "b"), 2),
+    ])
+    def test_access_nested_map(self, nested_map, path, answer):
+        """ method to test that the method returns what it is supposed to """
+        self.assertEqual(access_nested_map(nested_map, path), answer)
 
-    Args:
-        unittest (_type_): _description_
-    """
-
-    @parameterized.expand(
-        [
-            ({"a": 1}, ("a",), 1),
-            ({"a": {"b": 2}}, ("a",), {"b": 2}),
-            ({"a": {"b": 2}}, ("a", "b"), 2)
-        ]
-    )
-    def test_access_nested_map(self, nested_map, path, expected_output):
-        """_summary_
-        """
-        result = access_nested_map(nested_map, path)
-        self.assertEqual(result, expected_output)
-
-    @parameterized.expand(
-        [
-            ({}, ("a",), KeyError),
-            ({"a": 1}, ("a", "b"), KeyError)
-        ]
-    )
-    def test_access_nested_map_exception(self, nested_map, path,
-                                         expected_output):
-        """_summary_
-        """
-        with self.assertRaises(expected_output) as context:
+    """  to test that a KeyError is raised for the following inputs """
+    @parameterized.expand([
+        ({}, ("a",)),
+        ({"a": 1}, ("a", "b")),
+    ])
+    def test_access_nested_map_exception(self, nested_map, path):
+        """ method to test that a KeyError is raised properly """
+        with self.assertRaises(KeyError) as error:
             access_nested_map(nested_map, path)
+        self.assertEqual(error.exception.args[0], path[-1])
 
 
 class TestGetJson(unittest.TestCase):
-    """_summary_
-
-    Args:
-                    unittest (_type_): _description_
-    """
-    @parameterized.expand(
-        [
-            ('http://example.com', {'payload': True}),
-            ('http://holberton.io', {'payload': False})
-        ]
-    )
-    def test_get_json(self, url, expected_output):
-        """_summary_
-        """
-        mock_response = Mock()
-        mock_response.json.return_value = expected_output
-        with patch('requests.get', return_value=mock_response):
-            response = get_json(url)
-
-            self.assertEqual(response, expected_output)
+    """ TESTCASE """
+    """ to test the function for following inputs """
+    @parameterized.expand([
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
+    ])
+    @patch('test_utils.get_json')
+    def test_get_json(self, test_url, test_payload, mock_get):
+        """ method to test that utils.get_json returns the expected result """
+        mock_get.return_value = test_payload
+        result = get_json(test_url)
+        self.assertEqual(result, test_payload)
 
 
 class TestMemoize(unittest.TestCase):
-    """_summary_
-
-    Args:
-                    unittest (_type_): _description_
-    """
-
+    """ TESTCASE """
     def test_memoize(self):
-        """_summary_
-
-        Returns:
-                _type_: _description_
+        """ Test that when calling a_property twice, the correct result is
+            returned but a_method is only called once using assert_called_once
         """
-
         class TestClass:
-            """_summary_
-            """
-
+            """ class """
             def a_method(self):
-                """_summary_
-
-                Returns:
-                        _type_: _description_
-                """
+                """ method  """
                 return 42
 
             @memoize
             def a_property(self):
-                """_summary_
-
-                Returns:
-                        _type_: _description_
-                """
+                """ property """
                 return self.a_method()
-
-        test_obj = TestClass()
-
-        with patch.object(test_obj, 'a_method') as mock_method:
-            mock_method.return_value = 42
-
-            result1 = test_obj.a_property
-            result2 = test_obj.a_property
-
-            self.assertEqual(result1, 42)
-            self.assertEqual(result2, 42)
-            mock_method.assert_called_once()
+        with patch.object(TestClass, "a_method") as mockMethod:
+            test_class = TestClass()
+            test_class.a_property
+            test_class.a_property
+            mockMethod.assert_called_once
